@@ -1,0 +1,1 @@
+A simple PHP script to handle file uploads (for instance, from <a href="http://wiki.github.com/arsduo/rainydays/">Rainydays</a>).  Adapted from http://www.9lessons.info/2009/03/upload-and-resize-image-with-php.html.
