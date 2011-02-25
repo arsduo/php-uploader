@@ -42,32 +42,28 @@ function resizeImage($image, $maxDimension, $destinationFilename, $path, $origin
 }
 
 $results = array();
-$errors = 0;
+$error = null;
 $resultsSent = false;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $image_name = $_FILES["Filedata"]["name"];
     $tmp_file = $_FILES["Filedata"]["tmp_name"];
-    $size_exceeded = false;
-    $results = array();
 
     // need to handle files too large!
     error_log("Request to handle " . $image_name);
     error_log("Files: " . print_r($_FILES, true));
     
     if ($image_name) {
-
         $filename = stripslashes($image_name);
         $extension = strtolower(getExtension($filename));
-
+		
         if (($extension != "jpg") && ($extension != "jpeg") && ($extension != "png") && ($extension != "gif")) {
-            echo ' Unknown Image extension ' . $extension;
-            $errors = 1;
+            $error = 'Unknown image extension ' . $extension;
         }
         else {
             $size = filesize($tmp_file);
             if ($size > MAX_FILESIZE * 1024) {
-                $size_exceeded = true;
+				$error = "Size limit of " . MAX_FILESIZE . "KB exceeded.";
             }
             else {
                 if ($extension == "jpg" || $extension == "jpeg" ) {
@@ -88,20 +84,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $newFilename = $result_filename_stem . "_" . $image_type . ".jpg";
                     $imageResult = array("url" => IMAGE_URL_STEM . $newFilename);
                     $imageResult = array_merge($imageResult, resizeImage($src, $details["size"], $newFilename, IMAGE_PATH, $originalWidth, $originalHeight));
-                    $results[$image_type] = IMAGE_URL_STEM . $newFilename;
+                    $results[$image_type] = $imageResult;
                 }
                 
                 $full_filename = $result_filename_stem . "_full.jpg";
                 copy($tmp_file, IMAGE_PATH . $full_filename);
-                $results["full"] = array("url" => IMAGE_URL_STEM . $full_filename, "size" => $size);
+                $results["full"] = array(
+                    "url" => IMAGE_URL_STEM . $full_filename, 
+                    "size" => $size, 
+                    "width" => $originalWidth, 
+                    "height" => $originalHeight
+                );
                 
                 // get rid of the original temp file
                 imagedestroy($src);
             }
         }
         
-        if ($size_exceeded) {
-            echo json_encode(array("error" => true, "sizeExceeded" => true));
+        if ($error) {
+            echo json_encode(array("error" => $error));
         }
         else {
             $results["error"] = false;
