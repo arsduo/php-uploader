@@ -3,8 +3,11 @@ ini_set("memory_limit", "100M");
 date_default_timezone_set("America/Los_Angeles");
 
 $thumbnails = array("thumb" => array("size" => 200), "large" => array("size" => 800));
-define("IMAGE_URL_STEM", "http://10.0.1.7/~ahkoppel2/uploader/images/");
-define("IMAGE_PATH", "/Users/ahkoppel2/Sites/uploader/images/");
+define("PRODUCTION", preg_match('/alexkoppel\.com/', $_SERVER['SERVER_NAME']));
+define("IMAGE_URL_STEM", (PRODUCTION ? "http://images.alexkoppel.com/" : "http://10.0.1.7/~ahkoppel2/uploader/images/"));
+define("IMAGE_PATH", dirname(__FILE__) . "/images/");
+
+error_log("Starting");
 
 // max size: 4 MB
 define("MAX_FILESIZE", 5000);
